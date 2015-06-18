@@ -48,7 +48,7 @@ class _CastleStatusCheckWrapper(object):
             return fn(castle, *args, **kwargs)
         return wrapping_fn
 
-_castle_status_wrapper = _CastleStatusCheckWrapper
+castle_status_wrapper = _CastleStatusCheckWrapper
 
 
 class Castle(object):
@@ -98,14 +98,14 @@ class Castle(object):
         else:
             return CastleState.outdated
 
-    @_castle_status_wrapper(invalid_states=(CastleState.missing, CastleState.invalid))
+    @castle_status_wrapper(invalid_states=(CastleState.missing, CastleState.invalid))
     def _fetch(self):
         '''
         Do git fetch on castle
         '''
         self._get_git_repo().remotes[self.REMOTE_NAME].fetch()
 
-    @_castle_status_wrapper(valid_states=(CastleState.missing,))
+    @castle_status_wrapper(valid_states=(CastleState.missing,))
     def _clone(self):
         '''
         Do git clone on castle
