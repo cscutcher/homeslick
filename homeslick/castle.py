@@ -76,6 +76,14 @@ class Castle(object):
         '''
         Get status of castle
         '''
+        status = self._get_status()
+        self.log.info('Getting status: %s', status)
+        return status
+
+    def _get_status(self):
+        '''
+        Get status of castle
+        '''
         if not self._staging_path.exists():
             return CastleState.missing
 
@@ -103,6 +111,7 @@ class Castle(object):
         '''
         Do git fetch on castle
         '''
+        self.log.info('Fetch')
         self._get_git_repo().remotes[self.REMOTE_NAME].fetch()
 
     @castle_status_wrapper(valid_states=(CastleState.missing,))
@@ -110,6 +119,7 @@ class Castle(object):
         '''
         Do git clone on castle
         '''
+        self.log.info('Clone')
         self._repo = Repo.clone_from(
             self._git_uri, str(self._staging_path), origin=self.REMOTE_NAME)
 
@@ -126,6 +136,8 @@ class Castle(object):
             config_writer.release()
         else:
             repo.create_remote(self.REMOTE_NAME, self._git_uri)
+
+        self.log.debug('Initialise with repo: %r', repo)
         return repo
 
     def _get_git_remote(self):
