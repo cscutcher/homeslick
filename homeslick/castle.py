@@ -30,7 +30,7 @@ class _CastleStatusCheckWrapper(object):
     '''
     Decorator to wrap Castle methods to prevent them running when in invalid state
     '''
-    def __init__(self, valid_states=(), invalid_states=None):
+    def __init__(self, valid_states=None, invalid_states=None):
         self._valid_states = valid_states
         self._invalid_states = invalid_states
 
@@ -91,7 +91,7 @@ class Castle(object):
             return CastleState.dirty
 
         head_ref = self._get_git_repo().head.reference.object
-        remote_ref = self.get_git_remote().refs.master.object
+        remote_ref = self._get_git_remote().refs.master.object
 
         if head_ref == remote_ref:
             return CastleState.fresh
@@ -99,14 +99,14 @@ class Castle(object):
             return CastleState.outdated
 
     @_castle_status_wrapper(invalid_states=(CastleState.missing, CastleState.invalid))
-    def fetch(self):
+    def _fetch(self):
         '''
         Do git fetch on castle
         '''
-        self._get_git_repo().remotes.origin.fetch()
+        self._get_git_repo().remotes[self.REMOTE_NAME].fetch()
 
     @_castle_status_wrapper(valid_states=(CastleState.missing,))
-    def clone(self):
+    def _clone(self):
         '''
         Do git clone on castle
         '''
@@ -128,7 +128,7 @@ class Castle(object):
             repo.create_remote(self.REMOTE_NAME, self._git_uri)
         return repo
 
-    def get_git_remote(self):
+    def _get_git_remote(self):
         '''
         Get remote for castle
         '''

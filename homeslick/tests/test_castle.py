@@ -38,14 +38,22 @@ class TestCastle(unittest.TestCase):
         self.assertEqual(self.castle.get_status(), CastleState.missing)
 
     def test_clone(self):
-        self.castle.clone()
+        self.castle._clone()
         self.assertEqual(self.castle.get_status(), CastleState.fresh)
+
+    def test_fetch(self):
+        '''
+        Test fetch.
+        TODO: This only tests it runs without exceptions. Need some assertions
+        '''
+        self.castle._clone()
+        self.castle._fetch()
 
     def test_outdated(self):
         '''
         Test that we can detect outdated commit
         '''
-        self.castle.clone()
+        self.castle._clone()
 
         # Reset to old revision
         self.castle._get_git_repo().head.reset(commit='HEAD^', working_tree=True)
@@ -56,8 +64,8 @@ class TestCastle(unittest.TestCase):
         '''
         Test double cloning causes exceptions
         '''
-        self.castle.clone()
+        self.castle._clone()
         self.assertEqual(self.castle.get_status(), CastleState.fresh)
         castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
         with self.assertRaises(InvalidCastleStateError):
-            castle.clone()
+            castle._clone()
