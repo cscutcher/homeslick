@@ -9,6 +9,7 @@ import tempfile
 from homeslick import context
 from homeslick.castle import Castle
 from homeslick.castle import CastleState
+from homeslick.castle import InvalidCastleStateError
 
 DEV_LOGGER = logging.getLogger(__name__)
 
@@ -35,3 +36,19 @@ class TestCastle(unittest.TestCase):
     def test_missing(self):
         castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
         self.assertEqual(castle.get_status(), CastleState.missing)
+
+    def test_clone(self):
+        castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
+        castle.clone()
+        self.assertEqual(castle.get_status(), CastleState.fresh)
+
+    def test_double_clone(self):
+        '''
+        Test double cloning causes exceptions
+        '''
+        castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
+        castle.clone()
+        self.assertEqual(castle.get_status(), CastleState.fresh)
+        castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
+        with self.assertRaises(InvalidCastleStateError):
+            castle.clone()

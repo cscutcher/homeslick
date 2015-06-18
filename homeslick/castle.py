@@ -3,6 +3,7 @@
 Castle definition
 """
 import logging
+import functools
 from enum import Enum
 from git import Repo
 from homeslick import context
@@ -16,6 +17,37 @@ class CastleState(Enum):
     missing = 0
     outdated = 1
     fresh = 2
+
+
+class InvalidCastleStateError(Exception):
+    '''
+    For when a function is called when the castle is in an invalid state
+    '''
+
+
+class _CastleStatusCheckWrapper(object):
+    '''
+    Decorator to wrap Castle methods to prevent them running when in invalid state
+    '''
+    def __init__(self, valid_states=(), invalid_states=None):
+        self._valid_states = valid_states
+        self._invalid_states = invalid_states
+
+    def __call__(self, fn):
+        '''
+        Decorate fn
+        '''
+        @functools.wraps(fn)
+        def wrapping_fn(castle, *args, **kwargs):
+            status = castle.get_status()
+            if self._valid_states is not None and (status not in self._valid_states):
+                raise InvalidCastleStateError('{0} not in {1}'.format(status, self._valid_states))
+            if self._invalid_states is not None and (status in self._invalid_states):
+                raise InvalidCastleStateError('{0} in {1}'.format(status, self._valid_states))
+            return fn(castle, *args, **kwargs)
+        return wrapping_fn
+
+_castle_status_wrapper = _CastleStatusCheckWrapper
 
 
 class Castle(object):
@@ -54,11 +86,22 @@ class Castle(object):
             self.log.error('Castle exists but it\'s git directory is missing or invalid')
             return Castle.invalid
 
+        return CastleState.fresh
+
+    @_castle_status_wrapper(invalid_states=(CastleState.missing, CastleState.invalid))
     def fetch(self):
         '''
         Do git fetch on castle
         '''
         self.get_git_repo().remotes.origin.fetch()
+
+    @_castle_status_wrapper(valid_states=(CastleState.missing,))
+    def clone(self):
+        '''
+        Do git clone on castle
+        '''
+        self._repo = Repo.clone_from(
+            self._git_uri, str(self._staging_path), origin=self.REMOTE_NAME)
 
     def _initialise_git_repo(self):
         '''
