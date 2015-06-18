@@ -87,10 +87,10 @@ class Castle(object):
             self.log.error('Castle exists but it\'s git directory is missing or invalid')
             return Castle.invalid
 
-        if self.get_git_repo().is_dirty():
+        if self._get_git_repo().is_dirty():
             return CastleState.dirty
 
-        head_ref = self.get_git_repo().head.reference.object
+        head_ref = self._get_git_repo().head.reference.object
         remote_ref = self.get_git_remote().refs.master.object
 
         if head_ref == remote_ref:
@@ -103,7 +103,7 @@ class Castle(object):
         '''
         Do git fetch on castle
         '''
-        self.get_git_repo().remotes.origin.fetch()
+        self._get_git_repo().remotes.origin.fetch()
 
     @_castle_status_wrapper(valid_states=(CastleState.missing,))
     def clone(self):
@@ -132,9 +132,9 @@ class Castle(object):
         '''
         Get remote for castle
         '''
-        return self.get_git_repo().remotes[self.REMOTE_NAME]
+        return self._get_git_repo().remotes[self.REMOTE_NAME]
 
-    def get_git_repo(self):
+    def _get_git_repo(self):
         '''
         Get repo object for castle
         '''

@@ -48,7 +48,7 @@ class TestCastle(unittest.TestCase):
         self.castle.clone()
 
         # Reset to old revision
-        self.castle.get_git_repo().head.reset(commit='HEAD^', working_tree=True)
+        self.castle._get_git_repo().head.reset(commit='HEAD^', working_tree=True)
 
         self.assertEqual(self.castle.get_status(), CastleState.outdated)
 
