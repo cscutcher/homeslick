@@ -17,6 +17,7 @@ class CastleState(Enum):
     missing = 0
     outdated = 1
     fresh = 2
+    dirty = 3
 
 
 class InvalidCastleStateError(Exception):
@@ -86,7 +87,16 @@ class Castle(object):
             self.log.error('Castle exists but it\'s git directory is missing or invalid')
             return Castle.invalid
 
-        return CastleState.fresh
+        if self.get_git_repo().is_dirty():
+            return CastleState.dirty
+
+        head_ref = self.get_git_repo().head.reference.object
+        remote_ref = self.get_git_remote().refs.master.object
+
+        if head_ref == remote_ref:
+            return CastleState.fresh
+        else:
+            return CastleState.outdated
 
     @_castle_status_wrapper(invalid_states=(CastleState.missing, CastleState.invalid))
     def fetch(self):

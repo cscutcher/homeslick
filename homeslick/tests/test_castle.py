@@ -27,6 +27,7 @@ class TestCastle(unittest.TestCase):
         self._old_home = os.environ['HOME']
         os.environ['HOME'] = self._fake_home.name
         context.update_context(context.Context())
+        self.castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
 
     def tearDown(self):
         context.update_context(self._old_context)
@@ -34,21 +35,29 @@ class TestCastle(unittest.TestCase):
         self._fake_home.cleanup()
 
     def test_missing(self):
-        castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
-        self.assertEqual(castle.get_status(), CastleState.missing)
+        self.assertEqual(self.castle.get_status(), CastleState.missing)
 
     def test_clone(self):
-        castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
-        castle.clone()
-        self.assertEqual(castle.get_status(), CastleState.fresh)
+        self.castle.clone()
+        self.assertEqual(self.castle.get_status(), CastleState.fresh)
+
+    def test_outdated(self):
+        '''
+        Test that we can detect outdated commit
+        '''
+        self.castle.clone()
+
+        # Reset to old revision
+        self.castle.get_git_repo().head.reset(commit='HEAD^', working_tree=True)
+
+        self.assertEqual(self.castle.get_status(), CastleState.outdated)
 
     def test_double_clone(self):
         '''
         Test double cloning causes exceptions
         '''
-        castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
-        castle.clone()
-        self.assertEqual(castle.get_status(), CastleState.fresh)
+        self.castle.clone()
+        self.assertEqual(self.castle.get_status(), CastleState.fresh)
         castle = Castle(self.TEST_NAME, self.TEST_GIT_URI)
         with self.assertRaises(InvalidCastleStateError):
             castle.clone()
