@@ -67,6 +67,7 @@ class Castle(object):
         self._staging_path = self._global_context.castles_path / self._name
         self._staging_git_path = self._staging_path / '.git'
         self._repo = None
+        self._branch = 'master'
 
     @property
     def log(self):
@@ -79,6 +80,18 @@ class Castle(object):
         status = self._get_status()
         self.log.info('Getting status: %s', status)
         return status
+
+    def init(self):
+        '''
+        Initiliase castle
+        '''
+        return self._clone()
+
+    def pull(self):
+        '''
+        Update castle
+        '''
+        self._get_git_remote().pull(self._branch)
 
     def _get_status(self):
         '''
@@ -99,7 +112,7 @@ class Castle(object):
             return CastleState.dirty
 
         head_ref = self._get_git_repo().head.reference.object
-        remote_ref = self._get_git_remote().refs.master.object
+        remote_ref = self._get_git_remote().refs[self._branch].object
 
         if head_ref == remote_ref:
             return CastleState.fresh

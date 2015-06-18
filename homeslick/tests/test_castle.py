@@ -60,6 +60,21 @@ class TestCastle(unittest.TestCase):
 
         self.assertEqual(self.castle.get_status(), CastleState.outdated)
 
+    def test_pull(self):
+        '''
+        Test that we can pull
+        '''
+        self.castle._clone()
+
+        # Reset to old revision
+        self.castle._get_git_repo().head.reset(commit='HEAD^', working_tree=True)
+
+        self.assertEqual(self.castle.get_status(), CastleState.outdated)
+
+        self.castle.pull()
+
+        self.assertEqual(self.castle.get_status(), CastleState.fresh)
+
     def test_double_clone(self):
         '''
         Test double cloning causes exceptions
