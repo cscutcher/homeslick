@@ -7,6 +7,8 @@ import functools
 from enum import Enum
 from git import Repo
 from homeslick import context
+from homeslick.interfaces import ICastle
+import zope.interface
 
 
 DEV_LOGGER = logging.getLogger(__name__)
@@ -51,6 +53,7 @@ class _CastleStatusCheckWrapper(object):
 castle_status_wrapper = _CastleStatusCheckWrapper
 
 
+zope.interface.implementer(ICastle)
 class Castle(object):
     '''
     The castle object stores a single component of a home environment
@@ -87,6 +90,7 @@ class Castle(object):
         '''
         return self._clone()
 
+    @castle_status_wrapper(valid_states=(CastleState.outdated, CastleState.fresh))
     def pull(self):
         '''
         Update castle
@@ -111,6 +115,7 @@ class Castle(object):
         if self._get_git_repo().is_dirty():
             return CastleState.dirty
 
+        self._fetch()
         head_ref = self._get_git_repo().head.reference.object
         remote_ref = self._get_git_remote().refs[self._branch].object
 
@@ -119,7 +124,6 @@ class Castle(object):
         else:
             return CastleState.outdated
 
-    @castle_status_wrapper(invalid_states=(CastleState.missing, CastleState.invalid))
     def _fetch(self):
         '''
         Do git fetch on castle
