@@ -5,7 +5,6 @@ Context Utility
 import logging
 import os
 from pathlib import Path
-from appdirs import AppDirs
 
 DEV_LOGGER = logging.getLogger(__name__)
 
@@ -14,13 +13,49 @@ class Context(object):
     '''
     Store context for homeslick
     '''
+    APP_NAME = 'homeslick'
+
     def __init__(self):
-        self._appdirs = AppDirs('homeslick')
-        self.home_path = Path(os.environ['HOME'])
-        self.castles_path = Path(self._appdirs.user_data_dir) / 'castles'
-        self.config_path = Path(self._appdirs.user_config_dir) / 'config.yml'
+        self._home_path_override = None
+        self._castles_path_override = None
+        self._config_path_override = None
+
+    @property
+    def home_path(self):
+        if self._home_path_override is None:
+            return Path(os.environ['HOME'])
+        else:
+            return self._home_path_override
+
+    @home_path.setter
+    def home_path(self, value):
+        self._home_path_override = Path(value)
+
+    @property
+    def castles_path(self):
+        if self._castles_path_override is None:
+            return self.home_path / '.local' / 'share' / self.APP_NAME / 'castles'
+        else:
+            return self._castles_path_override
+
+    @castles_path.setter
+    def castles_path(self, value):
+        self._castles_path_override = Path(value)
+
+    @property
+    def config_path(self):
+        if self._config_path_override is None:
+            return self.home_path / '.config' / self.APP_NAME / 'config.yml'
+        else:
+            return self._config_path_override
+
+    @config_path.setter
+    def config_path(self, value):
+        self._config_path_override = Path(value)
 
 _CONTEXT = None
+
+
 def get_context():
     '''
     Get context utility
@@ -29,6 +64,7 @@ def get_context():
     if _CONTEXT is None:
         _CONTEXT = Context()
     return _CONTEXT
+
 
 def update_context(context):
     '''

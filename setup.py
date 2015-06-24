@@ -18,5 +18,5 @@ setup(
     name="homeslick",
     version="0.1",
     packages=find_packages(),
-    install_requires=('pathlib', 'appdirs', 'gitpython>=0.3', 'zope.interface'),
+    install_requires=('pathlib', 'gitpython>=0.3', 'zope.interface', 'click'),
 )
