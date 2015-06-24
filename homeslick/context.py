@@ -20,6 +20,16 @@ class Context(object):
         self._castles_path_override = None
         self._config_path_override = None
 
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return (
+            '{self.__class__.__name__}('
+            'home_path={self.home_path!r}, '
+            'castles_path={self.castles_path!r}, '
+            'config_path={self.config_path!r})'.format(self=self))
+
     @property
     def home_path(self):
         if self._home_path_override is None:
