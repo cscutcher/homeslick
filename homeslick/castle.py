@@ -86,7 +86,7 @@ class Castle(object):
 
     def init(self):
         '''
-        Initiliase castle
+        Initialise castle
         '''
         return self._clone()
 
