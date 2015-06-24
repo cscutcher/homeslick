@@ -36,6 +36,14 @@ class Homeshick(Castle):
     """
     Homeshick castle which reimplements (some of) the features of homeshick
     """
+    def pull():
+        super().pull()
+        self.symlink()
+
+    def init():
+        self.init()
+        self.symlink()
+
     def _symlink_iterator(self, castle_path, home_path):
         for sub_path in castle_path.iterdir():
             castle_sub_path = sub_path
